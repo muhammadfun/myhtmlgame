@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arabic Vocabulary Flashcards</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #2c5530 0%, #1a472a 50%, #0d2818 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: white;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            background: linear-gradient(45deg, #ffd700, #ffed4e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .progress-container {
+            background: rgba(255,255,255,0.15);
+            border-radius: 20px;
+            padding: 20px 30px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255,255,255,0.2);
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 20px;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .progress-item {
+            text-align: center;
+        }
+
+        .progress-item span {
+            display: block;
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #ffd700;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+
+        .progress-item label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ffd700, #ffed4e);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+            width: 0%;
+        }
+
+        .flashcard-container {
+            perspective: 1200px;
+            margin-bottom: 30px;
+        }
+
+        .flashcard {
+            width: 450px;
+            height: 280px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.7s cubic-bezier(0.4, 0.2, 0.2, 1);
+            cursor: pointer;
+        }
+
+        .flashcard.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 35px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+            border: 2px solid rgba(255,255,255,0.1);
+        }
+
+        .card-front {
+            background: linear-gradient(135deg, #d63031, #e17055);
+        }
+
+        .card-back {
+            background: linear-gradient(135deg, #0984e3, #74b9ff);
+            transform: rotateY(180deg);
+        }
+
+        .card-face h2 {
+            font-size: 2.8rem;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.4);
+            line-height: 1.2;
+        }
+
+        .arabic-text {
+            font-family: 'Arial Unicode MS', 'Tahoma', sans-serif;
+            direction: rtl;
+            text-align: center;
+        }
+
+        .card-face p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            line-height: 1.5;
+            margin-top: 10px;
+        }
+
+        .card-face .pronunciation {
+            font-style: italic;
+            font-size: 1rem;
+            opacity: 0.8;
+            margin-top: 8px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 30px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #ffd700, #ffb347);
+            color: #333;
+            box-shadow: 0 4px 15px rgba(255,215,0,0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(255,215,0,0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.15);
+            color: white;
+            border: 2px solid rgba(255,255,255,0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.25);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255,255,255,0.2);
+        }
+
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .card-indicator {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            opacity: 0.9;
+            background: rgba(255,255,255,0.1);
+            padding: 10px 20px;
+            border-radius: 25px;
+            backdrop-filter: blur(10px);
+        }
+
+        .completion-message {
+            background: linear-gradient(135deg, rgba(255,215,0,0.2), rgba(255,179,71,0.2));
+            border: 2px solid #ffd700;
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            backdrop-filter: blur(15px);
+            margin-top: 20px;
+            animation: celebrationPulse 2s infinite;
+        }
+
+        .completion-message h3 {
+            font-size: 2rem;
+            margin-bottom: 15px;
+            color: #ffd700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        @keyframes celebrationPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        .study-mode {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .study-mode select {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 1rem;
+        }
+
+        .study-mode select option {
+            background: #2c5530;
+            color: white;
+        }
+
+        @media (max-width: 480px) {
+            .flashcard {
+                width: 350px;
+                height: 220px;
+            }
+            
+            .card-face h2 {
+                font-size: 2.2rem;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .progress-container {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 15px;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn {
+                width: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🇸🇦 Arabic Greetings & Phrases</h1>
+        <p>Click the card to reveal the translation and pronunciation!</p>
+    </div>
+
+    <div class="progress-container">
+        <div class="progress-item">
+            <span id="currentCard">1</span>
+            <label>Current</label>
+        </div>
+        <div class="progress-item">
+            <span id="totalCards">50</span>
+            <label>Total</label>
+        </div>
+        <div class="progress-item">
+            <span id="studiedCount">0</span>
+            <label>Studied</label>
+        </div>
+        <div class="progress-item">
+            <span id="progressPercent">0%</span>
+            <label>Complete</label>
+        </div>
+    </div>
+
+    <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+    </div>
+
+    <div class="study-mode">
+        <label for="studyMode">Study Mode: </label>
+        <select id="studyMode" onchange="changeStudyMode()">
+            <option value="sequential">Sequential</option>
+            <option value="random">Random</option>
+            <option value="unstudied">Unstudied Only</option>
+        </select>
+    </div>
+
+    <div class="card-indicator">
+        Card <span id="cardNumber">1</span> of <span id="totalCardsDisplay">50</span>
+    </div>
+
+    <div class="flashcard-container">
+        <div class="flashcard" id="flashcard">
+            <div class="card-face card-front">
+                <h2 id="frontText" class="arabic-text">السلام عليكم</h2>
+                <p class="pronunciation" id="pronunciation">As-salāmu ʿalaykum</p>
+                <p>Tap to see translation</p>
+            </div>
+            <div class="card-face card-back">
+                <h2 id="backText">Peace be upon you</h2>
+                <p id="description">Traditional Islamic greeting used by Muslims worldwide</p>
+                <p id="usage">Used: Formal greeting, any time of day</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button class="btn btn-secondary" id="prevBtn" onclick="previousCard()">← Previous</button>
+        <button class="btn btn-primary" id="flipBtn" onclick="flipCard()">Flip Card</button>
+        <button class="btn btn-secondary" id="nextBtn" onclick="nextCard()">Next →</button>
+    </div>
+
+    <div class="controls">
+        <button class="btn btn-secondary" onclick="resetProgress()">Reset Progress</button>
+        <button class="btn btn-secondary" onclick="shuffleCards()">Shuffle Cards</button>
+        <button class="btn btn-secondary" onclick="markAsStudied()">Mark Studied</button>
+    </div>
+
+    <div id="completionMessage" class="completion-message" style="display: none;">
+        <h3>🎉 مبروك! Congratulations!</h3>
+        <p>You've studied all 50 Arabic greetings and phrases! You're well on your way to mastering Arabic social interactions.</p>
+        <p><strong>أحسنت!</strong> (Well done!)</p>
+    </div>
+
+    <script>
+        const flashcards = [
+            { arabic: "السلام عليكم", english: "Peace be upon you", pronunciation: "As-salāmu ʿalaykum", description: "Traditional Islamic greeting used by Muslims worldwide", usage: "Formal greeting, any time of day" },
+            { arabic: "وعليكم السلام", english: "And upon you peace", pronunciation: "Wa ʿalaykumu s-salām", description: "Traditional response to 'As-salāmu ʿalaykum'", usage: "Response to Islamic greeting" },
+            { arabic: "أهلاً وسهلاً", english: "Welcome", pronunciation: "Ahlan wa sahlan", description: "Warm welcome greeting", usage: "Welcoming guests or visitors" },
+            { arabic: "مرحباً", english: "Hello", pronunciation: "Marhaban", description: "Common casual greeting", usage: "Informal hello, any time" },
+            { arabic: "صباح الخير", english: "Good morning", pronunciation: "Sabāh al-khayr", description: "Morning greeting", usage: "Used until noon" },
+            { arabic: "صباح النور", english: "Morning of light", pronunciation: "Sabāh an-nūr", description: "Response to 'Good morning'", usage: "Reply to morning greeting" },
+            { arabic: "مساء الخير", english: "Good evening", pronunciation: "Masā' al-khayr", description: "Evening greeting", usage: "Used from afternoon onwards" },
+            { arabic: "مساء النور", english: "Evening of light", pronunciation: "Masā' an-nūr", description: "Response to 'Good evening'", usage: "Reply to evening greeting" },
+            { arabic: "كيف حالك؟", english: "How are you?", pronunciation: "Kayf hālak?", description: "Asking about someone's condition", usage: "To male, informal inquiry" },
+            { arabic: "كيف حالكِ؟", english: "How are you?", pronunciation: "Kayf hālik?", description: "Asking about someone's condition", usage: "To female, informal inquiry" },
+            { arabic: "بخير، الحمد لله", english: "Fine, praise be to God", pronunciation: "Bi-khayr, al-hamdu lillāh", description: "Common response to 'How are you?'", usage: "Positive response with gratitude" },
+            { arabic: "كيف صحتك؟", english: "How is your health?", pronunciation: "Kayf sahtak?", description: "Inquiring about someone's health", usage: "More specific health inquiry" },
+            { arabic: "أهلاً بك", english: "Welcome to you", pronunciation: "Ahlan bik", description: "Personal welcome", usage: "Welcoming someone specifically" },
+            { arabic: "حياك الله", english: "May God give you life", pronunciation: "Hayyāka Allah", description: "Religious greeting/welcome", usage: "Blessing-based welcome" },
+            { arabic: "نورت المكان", english: "You lit up the place", pronunciation: "Nawwart al-makān", description: "Complimentary welcome", usage: "When someone arrives" },
+            { arabic: "تشرفنا", english: "You honored us", pronunciation: "Tasharrafnā", description: "Honored by your presence", usage: "Formal welcome expression" },
+            { arabic: "ما شاء الله", english: "What God has willed", pronunciation: "Mā shā' Allah", description: "Expression of appreciation", usage: "Admiration, avoiding evil eye" },
+            { arabic: "بارك الله فيك", english: "May God bless you", pronunciation: "Bārak Allah fīk", description: "Blessing someone", usage: "Thanking or blessing" },
+            { arabic: "جزاك الله خيراً", english: "May God reward you with good", pronunciation: "Jazāka Allah khayran", description: "Thanking with prayer", usage: "Formal thank you" },
+            { arabic: "شكراً", english: "Thank you", pronunciation: "Shukran", description: "Simple thanks", usage: "Basic gratitude" },
+            { arabic: "شكراً جزيلاً", english: "Thank you very much", pronunciation: "Shukran jazīlan", description: "Emphatic thanks", usage: "Strong gratitude" },
+            { arabic: "عفواً", english: "You're welcome", pronunciation: "ʿAfwan", description: "Response to thanks", usage: "Polite response" },
+            { arabic: "لا شكر على واجب", english: "No thanks for duty", pronunciation: "Lā shukr ʿalā wājib", description: "It was my duty", usage: "Humble response to thanks" },
+            { arabic: "معذرة", english: "Excuse me", pronunciation: "Maʿdhira", description: "Polite excuse", usage: "Getting attention politely" },
+            { arabic: "آسف", english: "Sorry", pronunciation: "Āsif", description: "Apology", usage: "Male speaker apologizing" },
+            { arabic: "آسفة", english: "Sorry", pronunciation: "Āsifa", description: "Apology", usage: "Female speaker apologizing" },
+            { arabic: "سامحني", english: "Forgive me", pronunciation: "Sāmihnī", description: "Asking for forgiveness", usage: "Seeking pardon" },
+            { arabic: "لا بأس", english: "No problem", pronunciation: "Lā ba's", description: "It's okay", usage: "Accepting apology" },
+            { arabic: "ما عليش", english: "Don't worry about it", pronunciation: "Mā ʿalēsh", description: "Don't mind", usage: "Casual dismissal of concern" },
+            { arabic: "إن شاء الله", english: "God willing", pronunciation: "In shā' Allah", description: "Expressing hope with God's will", usage: "Future plans or hopes" },
+            { arabic: "الحمد لله", english: "Praise be to God", pronunciation: "Al-hamdu lillāh", description: "Expressing gratitude to God", usage: "Gratitude, after good news" },
+            { arabic: "سبحان الله", english: "Glory be to God", pronunciation: "Subhān Allah", description: "Expressing amazement", usage: "Wonder, surprise" },
+            { arabic: "الله أكبر", english: "God is greatest", pronunciation: "Allāhu akbar", description: "Declaring God's greatness", usage: "Religious expression" },
+            { arabic: "بسم الله", english: "In the name of God", pronunciation: "Bismillāh", description: "Starting with God's name", usage: "Before beginning tasks" },
+            { arabic: "توكلت على الله", english: "I trust in God", pronunciation: "Tawakkaltu ʿalā Allah", description: "Expressing reliance on God", usage: "Before difficult tasks" },
+            { arabic: "لا حول ولا قوة إلا بالله", english: "No power except with God", pronunciation: "Lā hawla wa lā quwwata illā billāh", description: "Seeking God's help", usage: "In difficulty or amazement" },
+            { arabic: "أستغفر الله", english: "I seek God's forgiveness", pronunciation: "Astaghfiru Allah", description: "Seeking forgiveness", usage: "Repentance, after mistakes" },
+            { arabic: "رب اغفر لي", english: "Lord, forgive me", pronunciation: "Rabbi ghfir lī", description: "Prayer for forgiveness", usage: "Personal supplication" },
+            { arabic: "اللهم صل على محمد", english: "O God, bless Muhammad", pronunciation: "Allāhumma salli ʿalā Muhammad", description: "Blessing the Prophet", usage: "After mentioning Prophet" },
+            { arabic: "صلى الله عليه وسلم", english: "Peace and blessings upon him", pronunciation: "Sallā Allāhu ʿalayhi wa sallam", description: "Blessing after Prophet's name", usage: "After mentioning Prophet" },
+            { arabic: "رضي الله عنه", english: "May God be pleased with him", pronunciation: "Radiya Allāhu ʿanhu", description: "Blessing for companions", usage: "After companion's name" },
+            { arabic: "جعلني فداك", english: "May I be your sacrifice", pronunciation: "Jaʿalanī fidāk", description: "Expression of devotion", usage: "Deep respect/love" },
+            { arabic: "حفظك الله", english: "May God protect you", pronunciation: "Hafizaka Allah", description: "Prayer for protection", usage: "Blessing someone" },
+            { arabic: "في أمان الله", english: "In God's protection", pronunciation: "Fī amān Allah", description: "Farewell blessing", usage: "When parting" },
+            { arabic: "مع السلامة", english: "Go with peace", pronunciation: "Maʿa s-salāma", description: "Peaceful farewell", usage: "Saying goodbye" },
+            { arabic: "إلى اللقاء", english: "Until we meet", pronunciation: "Ilā l-liqā'", description: "Until next meeting", usage: "Temporary farewell" },
+            { arabic: "أراك لاحقاً", english: "See you later", pronunciation: "Arāka lāhiqan", description: "Casual goodbye", usage: "Informal parting" },
+            { arabic: "طاب يومك", english: "May your day be good", pronunciation: "Tāba yawmuk", description: "Wishing good day", usage: "Daytime farewell" },
+            { arabic: "طابت ليلتك", english: "May your night be good", pronunciation: "Tābat laylatak", description: "Wishing good night", usage: "Evening farewell" },
+            { arabic: "أحلام سعيدة", english: "Sweet dreams", pronunciation: "Ahlām saʿīda", description: "Wishing pleasant dreams", usage: "Bedtime farewell" }
+        ];
+
+        let currentCardIndex = 0;
+        let isFlipped = false;
+        let studiedCards = new Set();
+        let studyMode = 'sequential';
+        let availableCards = [...Array(flashcards.length).keys()];
+
+        function updateCard() {
+            const card = flashcards[currentCardIndex];
+            document.getElementById('frontText').textContent = card.arabic;
+            document.getElementById('pronunciation').textContent = card.pronunciation;
+            document.getElementById('backText').textContent = card.english;
+            document.getElementById('description').textContent = card.description;
+            document.getElementById('usage').textContent = "Used: " + card.usage;
+            
+            // Reset flip state
+            document.getElementById('flashcard').classList.remove('flipped');
+            isFlipped = false;
+            
+            updateProgress();
+            updateNavigation();
+        }
+
+        function updateProgress() {
+            const currentPosition = availableCards.indexOf(currentCardIndex) + 1;
+            document.getElementById('currentCard').textContent = currentPosition;
+            document.getElementById('cardNumber').textContent = currentPosition;
+            document.getElementById('totalCardsDisplay').textContent = availableCards.length;
+            document.getElementById('studiedCount').textContent = studiedCards.size;
+            
+            const progressPercent = Math.round((studiedCards.size / flashcards.length) * 100);
+            document.getElementById('progressPercent').textContent = progressPercent + '%';
+            document.getElementById('progressFill').style.width = progressPercent + '%';
+            
+            // Show completion message if all cards studied
+            if (studiedCards.size === flashcards.length) {
+                document.getElementById('completionMessage').style.display = 'block';
+            }
+        }
+
+        function updateNavigation() {
+            const currentPos = availableCards.indexOf(currentCardIndex);
+            document.getElementById('prevBtn').disabled = currentPos === 0;
+            document.getElementById('nextBtn').disabled = currentPos === availableCards.length - 1;
+        }
+
+        function flipCard() {
+            const flashcard = document.getElementById('flashcard');
+            flashcard.classList.toggle('flipped');
+            isFlipped = !isFlipped;
+            
+            // Mark card as studied when flipped
+            if (isFlipped) {
+                studiedCards.add(currentCardIndex);
+                updateProgress();
+            }
+        }
+
+        function nextCard() {
+            const currentPos = availableCards.indexOf(currentCardIndex);
+            if (currentPos < availableCards.length - 1) {
+                currentCardIndex = availableCards[currentPos + 1];
+                updateCard();
+            }
+        }
+
+        function previousCard() {
+            const currentPos = availableCards.indexOf(currentCardIndex);
+            if (currentPos > 0) {
+                currentCardIndex = availableCards[currentPos - 1];
+                updateCard();
+            }
+        }
+
+        function markAsStudied() {
+            studiedCards.add(currentCardIndex);
+            updateProgress();
+            updateAvailableCards();
+        }
+
+        function resetProgress() {
+            studiedCards.clear();
+            currentCardIndex = 0;
+            document.getElementById('completionMessage').style.display = 'none';
+            updateAvailableCards();
+            updateCard();
+        }
+
+        function shuffleCards() {
+            // Fisher-Yates shuffle
+            for (let i = availableCards.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [availableCards[i], availableCards[j]] = [availableCards[j], availableCards[i]];
+            }
+            
+            currentCardIndex = availableCards[0];
+            updateCard();
+        }
+
+        function changeStudyMode() {
+            studyMode = document.getElementById('studyMode').value;
+            updateAvailableCards();
+            updateCard();
+        }
+
+        function updateAvailableCards() {
+            switch(studyMode) {
+                case 'sequential':
+                    availableCards = [...Array(flashcards.length).keys()];
+                    break;
+                case 'random':
+                    availableCards = [...Array(flashcards.length).keys()];
+                    shuffleCards();
+                    return; // shuffleCards already updates the card
+                case 'unstudied':
+                    availableCards = [...Array(flashcards.length).keys()].filter(i => !studiedCards.has(i));
+                    if (availableCards.length === 0) {
+                        availableCards = [...Array(flashcards.length).keys()];
+                    }
+                    break;
+            }
+            
+            if (!availableCards.includes(currentCardIndex)) {
+                currentCardIndex = availableCards[0];
+            }
+        }
+
+        // Click card to flip
+        document.getElementById('flashcard').addEventListener('click', flipCard);
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            switch(e.key) {
+                case 'ArrowLeft':
+                    previousCard();
+                    break;
+                case 'ArrowRight':
+                    nextCard();
+                    break;
+                case ' ':
+                case 'Enter':
+                    e.preventDefault();
+                    flipCard();
+                    break;
+                case 'm':
+                case 'M':
+                    markAsStudied();
+                    break;
+            }
+        });
+
+        // Initialize
+        updateCard();
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9601c8a1f3444b55',t:'MTc1MjY3MTg4OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
